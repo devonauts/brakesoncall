@@ -83,6 +83,13 @@ def create_booking():
     db.session.add(booking)
     db.session.commit()
 
+    # Send confirmation email
+    try:
+        from ..utils.email import send_booking_confirmation
+        send_booking_confirmation(booking)
+    except Exception:
+        pass  # Don't fail the booking if email fails
+
     return jsonify(booking_schema.dump(booking)), 201
 
 
@@ -163,5 +170,12 @@ def update_booking_status(booking_id):
 
     booking.status = new_status
     db.session.commit()
+
+    # Send status update email
+    try:
+        from ..utils.email import send_booking_status_update
+        send_booking_status_update(booking, new_status)
+    except Exception:
+        pass
 
     return jsonify(booking_schema.dump(booking))

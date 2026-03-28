@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { UserPlus } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { Turnstile } from '../ui/Turnstile';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../ui/Toast';
 
@@ -32,6 +33,7 @@ export function RegisterForm({ skipRedirect, hideLinks }: RegisterFormProps) {
   const { register: registerUser } = useAuth({ skipRedirect });
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
   const {
     register,
     handleSubmit,
@@ -39,6 +41,10 @@ export function RegisterForm({ skipRedirect, hideLinks }: RegisterFormProps) {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+
+  const onTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -49,7 +55,8 @@ export function RegisterForm({ skipRedirect, hideLinks }: RegisterFormProps) {
         first_name: data.first_name,
         last_name: data.last_name,
         phone: data.phone,
-      });
+        turnstile_token: turnstileToken,
+      } as any);
       toast('success', 'Account created successfully!');
     } catch (err: any) {
       const msg = err.response?.data?.errors?.email?.[0] || err.response?.data?.error || 'Registration failed';
@@ -109,6 +116,7 @@ export function RegisterForm({ skipRedirect, hideLinks }: RegisterFormProps) {
         error={errors.confirm_password?.message}
         {...register('confirm_password')}
       />
+      <Turnstile onVerify={onTurnstileVerify} />
       <Button type="submit" fullWidth loading={loading} size="lg">
         <UserPlus className="w-4 h-4" />
         Create Account

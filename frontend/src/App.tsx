@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from './components/ui/Toast';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { PageSpinner } from './components/ui/Spinner';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { CustomerLayout } from './components/layout/CustomerLayout';
@@ -40,18 +41,24 @@ const MyJobsPage = lazy(() => import('./pages/backoffice/MyJobsPage').then((m) =
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30_000,
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
       retry: 1,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
     },
   },
 });
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ToastProvider>
-          <Suspense fallback={<PageSpinner />}>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ToastProvider>
+            <Suspense fallback={<PageSpinner />}>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
@@ -106,9 +113,10 @@ export default function App() {
               {/* Catch-all */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </Suspense>
-        </ToastProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+            </Suspense>
+          </ToastProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
