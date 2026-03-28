@@ -155,6 +155,17 @@ def confirm_payment_intent():
     return jsonify(payment_schema.dump(payment)), 201
 
 
+@api_bp.route('/payments/stripe-status', methods=['GET'])
+def get_stripe_status():
+    """Public endpoint: check if Stripe payments are available."""
+    stripe_key = os.environ.get('STRIPE_SECRET_KEY', '')
+    publishable_key = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+    return jsonify({
+        'enabled': bool(stripe_key and publishable_key),
+        'publishable_key': publishable_key if publishable_key else None,
+    })
+
+
 @api_bp.route('/payments/stripe-config', methods=['GET'])
 @jwt_required()
 @role_required(['admin'])
