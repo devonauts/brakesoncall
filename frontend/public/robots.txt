@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /account/
+Disallow: /backoffice/
+Disallow: /api/
+
+Sitemap: https://brakesoncall.com/sitemap.xml
