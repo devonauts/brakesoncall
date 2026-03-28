@@ -18,10 +18,6 @@ export function LoginPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             <LoginForm />
           </div>
-          <div className="mt-6 text-center text-xs text-gray-400">
-            <p>Demo accounts: admin@brakesoncall.com / admin123</p>
-            <p>john@example.com / customer123 | tech1@brakesoncall.com / tech123</p>
-          </div>
         </div>
       </div>
     </div>

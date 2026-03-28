@@ -55,8 +55,9 @@ def register():
     if errors:
         return jsonify({'errors': errors}), 422
 
-    # Only allow customer registration from public endpoint
-    role = 'customer'
+    # First user becomes admin, all others are customers
+    is_first_user = User.query.count() == 0
+    role = 'admin' if is_first_user else 'customer'
 
     user = User(
         email=data['email'].lower().strip(),
