@@ -1,15 +1,14 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { CreditCard, Settings, RotateCcw, CheckCircle, AlertCircle, Key } from 'lucide-react';
+import { CreditCard, Settings, RotateCcw, CheckCircle, AlertCircle } from 'lucide-react';
 import { paymentsApi } from '../../api/payments';
 import client from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
-import { Card, CardTitle } from '../../components/ui/Card';
+import { Card } from '../../components/ui/Card';
 import { StatusBadge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Modal } from '../../components/ui/Modal';
 import { PageSpinner } from '../../components/ui/Spinner';
 import { useToast } from '../../components/ui/Toast';
 
@@ -18,18 +17,15 @@ export function BackofficePaymentsPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [showStripeModal, setShowStripeModal] = useState(false);
-  const [stripeForm, setStripeForm] = useState({ secret_key: '', publishable_key: '' });
 
   const { data, isLoading } = useQuery({
     queryKey: ['payments', page],
     queryFn: () => paymentsApi.list({ page }),
   });
 
-  const { data: stripeConfig } = useQuery({
-    queryKey: ['stripe-config'],
-    queryFn: () => client.get('/payments/stripe-config').then((r) => r.data),
-    enabled: user?.role === 'admin',
+  const { data: stripeStatus } = useQuery({
+    queryKey: ['stripe-status'],
+    queryFn: () => client.get('/payments/stripe-status').then((r) => r.data),
   });
 
   const refundMutation = useMutation({
@@ -43,16 +39,6 @@ export function BackofficePaymentsPage() {
     },
   });
 
-  const stripeConfigMutation = useMutation({
-    mutationFn: () => client.put('/payments/stripe-config', stripeForm).then((r) => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stripe-config'] });
-      setShowStripeModal(false);
-      setStripeForm({ secret_key: '', publishable_key: '' });
-      toast('success', 'Stripe configuration saved!');
-    },
-  });
-
   if (isLoading) return <PageSpinner />;
 
   return (
@@ -60,47 +46,49 @@ export function BackofficePaymentsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-gray-900">Payments</h1>
         {user?.role === 'admin' && (
-          <Button variant="outline" onClick={() => setShowStripeModal(true)}>
-            <Settings className="w-4 h-4" /> Stripe Settings
-          </Button>
+          <Link to="/backoffice/settings">
+            <Button variant="outline" size="sm">
+              <Settings className="w-4 h-4" /> Configure Integrations
+            </Button>
+          </Link>
         )}
       </div>
 
       {/* Stripe Status Banner */}
-      {user?.role === 'admin' && (
-        <Card>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                stripeConfig?.is_configured ? 'bg-green-50' : 'bg-yellow-50'
-              }`}>
-                <CreditCard className={`w-5 h-5 ${
-                  stripeConfig?.is_configured ? 'text-green-600' : 'text-yellow-600'
-                }`} />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">Stripe Payment Gateway</h3>
-                <div className="flex items-center gap-2 mt-0.5">
-                  {stripeConfig?.is_configured ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm text-green-600 font-medium">Connected and active</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm text-yellow-600 font-medium">Not configured — payments will be recorded manually</span>
-                    </>
-                  )}
-                </div>
+      <Card>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              stripeStatus?.enabled ? 'bg-green-50' : 'bg-yellow-50'
+            }`}>
+              <CreditCard className={`w-5 h-5 ${
+                stripeStatus?.enabled ? 'text-green-600' : 'text-yellow-600'
+              }`} />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900">Stripe Payment Gateway</h3>
+              <div className="flex items-center gap-2 mt-0.5">
+                {stripeStatus?.enabled ? (
+                  <>
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-sm text-green-600 font-medium">Connected and active</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm text-yellow-600 font-medium">Not configured — payments recorded manually</span>
+                  </>
+                )}
               </div>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => setShowStripeModal(true)}>
-              Configure
-            </Button>
           </div>
-        </Card>
-      )}
+          {user?.role === 'admin' && (
+            <Link to="/backoffice/settings">
+              <Button size="sm" variant="ghost">Configure</Button>
+            </Link>
+          )}
+        </div>
+      </Card>
 
       {/* Payments Table */}
       <Card padding={false}>
@@ -130,7 +118,7 @@ export function BackofficePaymentsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 capitalize">
                     {p.payment_method === 'card' && p.transaction_id?.startsWith('pi_')
-                      ? '💳 Stripe'
+                      ? 'Stripe'
                       : p.payment_method
                     }
                   </td>
@@ -171,73 +159,6 @@ export function BackofficePaymentsPage() {
           <Button variant="ghost" size="sm" disabled={!data.has_next} onClick={() => setPage((p) => p + 1)}>Next</Button>
         </div>
       )}
-
-      {/* Stripe Configuration Modal */}
-      <Modal
-        isOpen={showStripeModal}
-        onClose={() => setShowStripeModal(false)}
-        title="Stripe Payment Configuration"
-        size="lg"
-      >
-        <div className="space-y-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <h4 className="font-semibold text-blue-900 mb-1">Connect your Stripe account</h4>
-            <p className="text-sm text-blue-700">
-              Enter your Stripe API keys to enable online card payments. You can find these in your{' '}
-              <span className="font-semibold">Stripe Dashboard &rarr; Developers &rarr; API Keys</span>.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <Key className="w-4 h-4 text-gray-500" />
-                <label className="text-sm font-medium text-gray-700">Publishable Key</label>
-              </div>
-              <Input
-                placeholder="pk_live_... or pk_test_..."
-                value={stripeForm.publishable_key}
-                onChange={(e) => setStripeForm({ ...stripeForm, publishable_key: e.target.value })}
-              />
-              <p className="mt-1 text-xs text-gray-400">Used in the frontend to initialize Stripe Elements</p>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <Key className="w-4 h-4 text-gray-500" />
-                <label className="text-sm font-medium text-gray-700">Secret Key</label>
-              </div>
-              <Input
-                type="password"
-                placeholder="sk_live_... or sk_test_..."
-                value={stripeForm.secret_key}
-                onChange={(e) => setStripeForm({ ...stripeForm, secret_key: e.target.value })}
-              />
-              <p className="mt-1 text-xs text-gray-400">Stored securely on the server, never exposed to the frontend</p>
-            </div>
-          </div>
-
-          {stripeConfig?.is_configured && (
-            <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <span className="text-sm text-green-700 font-medium">
-                Stripe is currently connected. Updating will replace existing keys.
-              </span>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="ghost" onClick={() => setShowStripeModal(false)}>Cancel</Button>
-            <Button
-              onClick={() => stripeConfigMutation.mutate()}
-              loading={stripeConfigMutation.isPending}
-              disabled={!stripeForm.secret_key || !stripeForm.publishable_key}
-            >
-              Save Stripe Configuration
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

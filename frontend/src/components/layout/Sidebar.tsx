@@ -7,6 +7,7 @@ import {
   CreditCard,
   HardHat,
   ClipboardList,
+  Settings,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../stores/authStore';
@@ -26,6 +27,7 @@ const navItems: NavItem[] = [
   { to: '/backoffice/technicians', icon: <HardHat className="w-5 h-5" />, label: 'Technicians', roles: ['admin', 'assistant'] },
   { to: '/backoffice/services', icon: <WrenchIcon className="w-5 h-5" />, label: 'Services', roles: ['admin'] },
   { to: '/backoffice/payments', icon: <CreditCard className="w-5 h-5" />, label: 'Payments', roles: ['admin', 'assistant'] },
+  { to: '/backoffice/settings', icon: <Settings className="w-5 h-5" />, label: 'Settings', roles: ['admin'] },
 ];
 
 export function Sidebar() {

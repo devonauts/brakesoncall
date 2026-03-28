@@ -37,6 +37,7 @@ const BackofficeServices = lazy(() => import('./pages/backoffice/ServicesPage').
 const BackofficePayments = lazy(() => import('./pages/backoffice/PaymentsPage').then((m) => ({ default: m.BackofficePaymentsPage })));
 const TechnicianWork = lazy(() => import('./pages/backoffice/TechnicianWorkPage').then((m) => ({ default: m.TechnicianWorkPage })));
 const MyJobsPage = lazy(() => import('./pages/backoffice/MyJobsPage').then((m) => ({ default: m.MyJobsPage })));
+const SettingsPage = lazy(() => import('./pages/backoffice/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -108,6 +109,7 @@ export default function App() {
                 <Route path="services" element={<BackofficeServices />} />
                 <Route path="payments" element={<BackofficePayments />} />
                 <Route path="work/:id" element={<TechnicianWork />} />
+                <Route path="settings" element={<SettingsPage />} />
               </Route>
 
               {/* Catch-all */}
