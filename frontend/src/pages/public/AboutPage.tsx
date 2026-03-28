@@ -50,7 +50,7 @@ export function AboutPage() {
                 { icon: <Heart className="w-7 h-7" />, title: 'Customer First', desc: 'From online booking to photo-documented service reports, every touchpoint is designed around your convenience and trust.' },
                 { icon: <MapPin className="w-7 h-7" />, title: 'We Come to You', desc: 'Home, office, or anywhere your car is parked. No towing, no drop-offs, no waiting rooms. We bring the shop to you.' },
                 { icon: <Award className="w-7 h-7" />, title: 'Quality Parts', desc: 'We use premium brake pads and components that meet or exceed OEM specifications. Your safety is never compromised.' },
-                { icon: <Users className="w-7 h-7" />, title: 'Transparent Pricing', desc: 'Upfront pricing with no hidden fees. You know exactly what you're paying before we start. No surprise charges, ever.' },
+                { icon: <Users className="w-7 h-7" />, title: 'Transparent Pricing', desc: "Upfront pricing with no hidden fees. You know exactly what you're paying before we start. No surprise charges, ever." },
               ].map((item) => (
                 <div key={item.title} className="bg-white rounded-2xl p-6 border border-gray-200">
                   <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center text-brand-500 mb-4">
