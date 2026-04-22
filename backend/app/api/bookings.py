@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from marshmallow import ValidationError
 from . import api_bp
 from ..extensions import db
 from ..models.user import User
@@ -58,11 +59,12 @@ def get_booking(booking_id):
 @jwt_required()
 def create_booking():
     user_id = int(get_jwt_identity())
-    data = request.get_json()
+    raw = request.get_json()
 
-    errors = booking_create_schema.validate(data)
-    if errors:
-        return jsonify({'errors': errors}), 422
+    try:
+        data = booking_create_schema.load(raw)
+    except ValidationError as err:
+        return jsonify({'errors': err.messages}), 422
 
     service = Service.query.get_or_404(data['service_id'])
 
@@ -103,10 +105,11 @@ def update_booking(booking_id):
     if user.role == 'customer' and booking.customer_id != user.id:
         return jsonify({'error': 'Access denied'}), 403
 
-    data = request.get_json()
-    errors = booking_update_schema.validate(data)
-    if errors:
-        return jsonify({'errors': errors}), 422
+    raw = request.get_json()
+    try:
+        data = booking_update_schema.load(raw)
+    except ValidationError as err:
+        return jsonify({'errors': err.messages}), 422
 
     for key, value in data.items():
         if hasattr(booking, key) and key not in ('id', 'customer_id'):
