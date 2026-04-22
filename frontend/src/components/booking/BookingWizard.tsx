@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, LogIn, Phone, CreditCard, CalendarDays } from 'lucide-react';
 import { clsx } from 'clsx';
+import { QRCodeSVG } from 'qrcode.react';
 import { useQuery } from '@tanstack/react-query';
 import { ServiceSelector } from './ServiceSelector';
 import { VehicleSelector } from './VehicleSelector';
@@ -376,6 +377,18 @@ export function BookingWizard() {
                       Call (512) 630-9050
                     </Button>
                   </a>
+                  <div className="hidden sm:flex flex-col items-center gap-2 pt-2">
+                    <div className="bg-white p-3 rounded-xl border border-gray-200">
+                      <QRCodeSVG
+                        value="tel:+15126309050"
+                        size={140}
+                        level="M"
+                        bgColor="#ffffff"
+                        fgColor="#141414"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">Scan with your phone to call</p>
+                  </div>
                   <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-600 space-y-1">
                     <p className="font-semibold text-gray-900">What happens next?</p>
                     <p>1. Our team will confirm your booking within 1 hour</p>
