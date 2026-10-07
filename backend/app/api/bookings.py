@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 from . import api_bp
@@ -11,6 +11,7 @@ from ..models.service_step import ServiceStep
 from ..schemas.booking import BookingSchema, BookingCreateSchema, BookingUpdateSchema, BookingAssignSchema
 from ..utils.decorators import role_required
 from ..utils.helpers import paginate
+from ..utils.notify import post_webhook, admin_url
 
 booking_schema = BookingSchema()
 bookings_schema = BookingSchema(many=True)
@@ -85,12 +86,31 @@ def create_booking():
     db.session.add(booking)
     db.session.commit()
 
-    # Send confirmation email
+    # Send confirmation email (never fail the booking because of it)
     try:
         from ..utils.email import send_booking_confirmation
-        send_booking_confirmation(booking)
+        if not send_booking_confirmation(booking):
+            current_app.logger.warning('Booking #%s confirmation email was not sent', booking.id)
     except Exception:
-        pass  # Don't fail the booking if email fails
+        current_app.logger.exception('Booking #%s confirmation email failed', booking.id)
+
+    try:
+        customer = booking.customer
+        post_webhook(
+            kind='booking',
+            subject=f'New booking #{booking.id}: {service.name}',
+            text=(f'Booking #{booking.id} — {service.name} on {booking.scheduled_date} '
+                  f'{booking.scheduled_time_slot} at {booking.address}, {booking.city}, '
+                  f'{booking.state} {booking.zip_code}. Total ${booking.total_price or 0:.2f}.'
+                  + (f'\nNotes: {booking.notes}' if booking.notes else '')),
+            name=customer.full_name if customer else None,
+            email=customer.email if customer else None,
+            phone=customer.phone if customer else None,
+            url=admin_url(f'/backoffice/bookings/{booking.id}'),
+            extra={'id': booking.id},
+        )
+    except Exception:
+        current_app.logger.exception('Booking #%s notify failed', booking.id)
 
     return jsonify(booking_schema.dump(booking)), 201
 

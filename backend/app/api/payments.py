@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timezone
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from . import api_bp
 from ..extensions import db
@@ -10,6 +10,7 @@ from ..models.booking import Booking
 from ..schemas.payment import PaymentSchema, PaymentCreateSchema
 from ..utils.decorators import role_required
 from ..utils.helpers import paginate
+from ..utils.notify import post_webhook, admin_url
 
 payment_schema = PaymentSchema()
 payments_schema = PaymentSchema(many=True)
@@ -151,6 +152,23 @@ def confirm_payment_intent():
     )
     db.session.add(payment)
     db.session.commit()
+
+    try:
+        customer = booking.customer
+        post_webhook(
+            kind='order',
+            subject=f'Payment received: booking #{booking.id}',
+            text=(f'Card payment #{payment.id} of ${payment.amount or 0:.2f} for booking '
+                  f'#{booking.id} ({booking.service.name if booking.service else "service"}). '
+                  f'Stripe intent {payment_intent_id}.'),
+            name=customer.full_name if customer else None,
+            email=customer.email if customer else None,
+            phone=customer.phone if customer else None,
+            url=admin_url(f'/backoffice/bookings/{booking.id}'),
+            extra={'id': payment.id, 'booking_id': booking.id},
+        )
+    except Exception:
+        current_app.logger.exception('Payment notify failed for booking #%s', booking_id)
 
     return jsonify(payment_schema.dump(payment)), 201
 

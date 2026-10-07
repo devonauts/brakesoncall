@@ -1,25 +1,56 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import axios from 'axios';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
+import { Turnstile } from '../../components/ui/Turnstile';
 import { useToast } from '../../components/ui/Toast';
+import { contactApi } from '../../api/contact';
+
+const EMPTY_FORM = { name: '', email: '', phone: '', message: '', website: '' };
+
+function errorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as { error?: string; errors?: Record<string, string[]> } | undefined;
+    if (err.response?.status === 429) return 'Too many messages. Please wait a few minutes or call us.';
+    if (data?.error) return data.error;
+    if (data?.errors) {
+      const first = Object.values(data.errors)[0];
+      if (first?.length) return first[0];
+    }
+    if (!err.response) return 'Could not reach the server. Please check your connection or call us.';
+  }
+  return 'Your message could not be sent. Please try again or call (512) 630-9050.';
+}
 
 export function ContactPage() {
   const { toast } = useToast();
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileKey, setTurnstileKey] = useState(0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const onTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), []);
+  const onTurnstileExpire = useCallback(() => setTurnstileToken(''), []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await contactApi.submit({ ...form, turnstile_token: turnstileToken });
       toast('success', 'Message sent! We\'ll get back to you within 24 hours.');
-      setForm({ name: '', email: '', phone: '', message: '' });
+      setForm(EMPTY_FORM);
+    } catch (err) {
+      toast('error', errorMessage(err));
+    } finally {
+      // Turnstile tokens are single-use: render a fresh widget either way
+      setTurnstileToken('');
+      setTurnstileKey((k) => k + 1);
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -136,6 +167,20 @@ export function ContactPage() {
                         required
                       />
                     </div>
+                    {/* Honeypot: hidden from people, bots tend to fill it */}
+                    <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' }}>
+                      <label htmlFor="contact-website">Website</label>
+                      <input
+                        id="contact-website"
+                        type="text"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={form.website}
+                        onChange={(e) => setForm({ ...form, website: e.target.value })}
+                      />
+                    </div>
+                    <Turnstile key={turnstileKey} onVerify={onTurnstileVerify} onExpire={onTurnstileExpire} />
                     <Button type="submit" size="lg" loading={loading}>
                       Send Message
                     </Button>

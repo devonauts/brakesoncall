@@ -10,6 +10,7 @@ from ..models.user import User
 from ..schemas.user import UserSchema, UserCreateSchema, UserLoginSchema, UserUpdateSchema
 from ..utils.turnstile import verify_turnstile
 from ..utils.email import send_email
+from ..utils.notify import post_webhook, admin_url
 
 user_schema = UserSchema()
 user_create_schema = UserCreateSchema()
@@ -70,6 +71,21 @@ def register():
 
     db.session.add(user)
     db.session.commit()
+
+    try:
+        post_webhook(
+            kind='signup',
+            subject=f'New {role} signup: {user.full_name}',
+            text=f'User #{user.id} registered: {user.full_name} <{user.email}>'
+                 + (f' ({user.phone})' if user.phone else '') + f', role {role}.',
+            name=user.full_name,
+            email=user.email,
+            phone=user.phone or None,
+            url=admin_url('/backoffice/customers'),
+            extra={'id': user.id},
+        )
+    except Exception:
+        current_app.logger.exception('Signup notify failed for user #%s', user.id)
 
     access_token = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))

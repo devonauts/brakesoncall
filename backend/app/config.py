@@ -31,6 +31,9 @@ class Config:
     SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', 'brakesoncall@gmail.com')
     SENDGRID_FROM_NAME = 'Brakes on Call'
 
+    # Urresta HQ webhook (empty = notifications disabled)
+    NOTIFY_WEBHOOK_URL = os.environ.get('NOTIFY_WEBHOOK_URL', '')
+
     # Security
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
@@ -60,6 +63,10 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    RATELIMIT_ENABLED = False
+    TURNSTILE_SECRET_KEY = ''
+    SENDGRID_API_KEY = ''
+    NOTIFY_WEBHOOK_URL = ''
 
 
 config = {
