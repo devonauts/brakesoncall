@@ -14,11 +14,14 @@ export function Navbar() {
     { to: '/', label: 'Home' },
     { to: '/services', label: 'Services' },
     { to: '/about', label: 'About' },
+    { to: '/blog/', label: 'Blog', page: true },
     { to: '/contact', label: 'Contact' },
     { to: '/book', label: 'Book Now' },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  // The blog is static HTML served by nginx (not a SPA route): its link is a real page load.
+  const isActive = (path: string) =>
+    path === '/blog/' ? /^\/blog(\/|$)/.test(location.pathname) : location.pathname === path;
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -31,20 +34,17 @@ export function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={clsx(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  isActive(link.to)
-                    ? 'bg-brand-50 text-brand-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const className = clsx(
+                'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                isActive(link.to)
+                  ? 'bg-brand-50 text-brand-600'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              );
+              return link.page
+                ? <a key={link.to} href={link.to} className={className}>{link.label}</a>
+                : <Link key={link.to} to={link.to} className={className}>{link.label}</Link>;
+            })}
           </div>
 
           {/* Auth Actions */}
@@ -91,19 +91,15 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white">
           <div className="px-4 py-3 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={clsx(
-                  'block px-4 py-2.5 rounded-lg text-sm font-medium',
-                  isActive(link.to) ? 'bg-brand-50 text-brand-600' : 'text-gray-600'
-                )}
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const className = clsx(
+                'block px-4 py-2.5 rounded-lg text-sm font-medium',
+                isActive(link.to) ? 'bg-brand-50 text-brand-600' : 'text-gray-600'
+              );
+              return link.page
+                ? <a key={link.to} href={link.to} className={className}>{link.label}</a>
+                : <Link key={link.to} to={link.to} className={className} onClick={() => setMobileOpen(false)}>{link.label}</Link>;
+            })}
             <hr className="my-2" />
             {isAuthenticated ? (
               <>

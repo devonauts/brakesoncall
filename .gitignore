@@ -25,3 +25,6 @@ backend/uploads/*
 *.log
 frontend/public/car-brakes-job.mov
 .claude/
+
+# Static blog SSR bundle (scripts/blog/vite-plugin.mjs)
+frontend/.blog-ssr/

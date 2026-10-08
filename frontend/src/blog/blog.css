@@ -1,0 +1,28 @@
+/* Article body of the static blog (Markdown → HTML), in the site's palette: Inter, gray-600 text, gray-900
+   headings, brand-500 accents. Tailwind's preflight resets lists and margins, so they are set here. */
+.boc-prose { color: var(--color-gray-600); font-size: 1.0625rem; line-height: 1.8; max-width: 48rem; margin-inline: auto; }
+.boc-prose > * + * { margin-top: 1.25rem; }
+.boc-prose h2 { margin-top: 3rem; font-size: 1.75rem; line-height: 1.25; font-weight: 800; letter-spacing: -0.02em; color: var(--color-gray-900); scroll-margin-top: 7rem; }
+.boc-prose h3, .boc-prose h4, .boc-prose h5, .boc-prose h6 { margin-top: 2.25rem; font-size: 1.25rem; line-height: 1.35; font-weight: 700; color: var(--color-gray-900); scroll-margin-top: 7rem; }
+.boc-prose h2 + *, .boc-prose h3 + *, .boc-prose h4 + * { margin-top: 0.75rem; }
+.boc-prose strong { color: var(--color-gray-900); font-weight: 700; }
+.boc-prose a { color: var(--color-brand-600); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-brand-200); }
+.boc-prose a:hover { color: var(--color-brand-700); text-decoration-color: var(--color-brand-500); }
+.boc-prose ul, .boc-prose ol { padding-left: 1.5rem; }
+.boc-prose ul { list-style: disc; }
+.boc-prose ol { list-style: decimal; }
+.boc-prose li { margin-top: 0.5rem; padding-left: 0.25rem; }
+.boc-prose li::marker { color: var(--color-brand-500); font-weight: 700; }
+.boc-prose li > ul, .boc-prose li > ol { margin-top: 0.5rem; }
+.boc-prose blockquote { margin-inline: 0; padding: 1rem 1.5rem; border-left: 4px solid var(--color-brand-500); background: var(--color-brand-50); border-radius: 0 0.75rem 0.75rem 0; color: var(--color-gray-800); }
+.boc-prose code { font-size: 0.9em; padding: 0.1rem 0.4rem; border-radius: 0.375rem; background: var(--color-gray-100); color: var(--color-gray-900); }
+.boc-prose pre { padding: 1.25rem; border-radius: 0.75rem; background: var(--color-dark); color: #f3f4f6; overflow-x: auto; }
+.boc-prose pre code { padding: 0; background: none; color: inherit; font-size: 0.85rem; }
+.boc-prose hr { border: 0; border-top: 1px solid var(--color-gray-200); margin-block: 2.5rem; }
+.boc-prose .blog-figure { margin: 2.5rem 0; }
+.boc-prose .blog-figure img { width: 100%; border-radius: 1rem; border: 1px solid var(--color-gray-200); }
+.boc-prose .blog-table { overflow-x: auto; border: 1px solid var(--color-gray-200); border-radius: 1rem; }
+.boc-prose table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+.boc-prose th { text-align: left; padding: 0.75rem 1rem; background: var(--color-gray-50); color: var(--color-gray-900); font-weight: 700; border-bottom: 1px solid var(--color-gray-200); }
+.boc-prose td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-gray-100); vertical-align: top; }
+.boc-prose tr:last-child td { border-bottom: 0; }
