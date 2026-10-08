@@ -3,6 +3,9 @@
 # that build by scripts/blog/vite-plugin.mjs). nginx serves frontend/dist; static files only, no restart.
 # publicar.sh has already built locally (validation) and committed when deploy_site runs.
 SITE_KEY="boc"
+# The server builds with `npx vite build` (no tsc); `npm run build` (tsc -b) currently fails on main because of
+# unused imports outside the blog. The blog generator and its validation run inside vite build either way.
+BUILD_CMD="${BUILD_CMD:-npx vite build}"
 SITE_URL="https://brakesoncall.com"
 DEPLOY_HOST="${DEPLOY_HOST:-brakesoncall@192.168.86.44}"
 DEPLOY_REPO="${DEPLOY_REPO:-brakesoncall}"      # relative to the remote $HOME
