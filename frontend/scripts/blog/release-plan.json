@@ -4,7 +4,8 @@
     "can-you-drive-with-grinding-brakes": "2026-10-22",
     "brake-pedal-goes-to-the-floor-what-to-do-first": "2026-10-23",
     "brakes-squeal-when-reversing": "2026-10-26",
-    "do-i-need-new-rotors-with-brake-pads": "2026-10-27"
+    "do-i-need-new-rotors-with-brake-pads": "2026-10-27",
+    "how-does-mobile-brake-service-work": "2026-10-29"
   },
   "posts": {
     "how-long-do-brake-pads-last-real-world-guide": {
@@ -71,6 +72,19 @@
         "do-i-need-new-rotors-with-brake-pads-3.png"
       ],
       "imported": "2026-10-21"
+    },
+    "how-does-mobile-brake-service-work": {
+      "lang": "en",
+      "item": 2254,
+      "keyword": "how does mobile brake service work",
+      "family": 2254,
+      "images": [
+        "how-does-mobile-brake-service-work.png",
+        "how-does-mobile-brake-service-work-1.png",
+        "how-does-mobile-brake-service-work-2.png",
+        "how-does-mobile-brake-service-work-3.png"
+      ],
+      "imported": "2026-10-29"
     }
   }
 }
